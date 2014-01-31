@@ -48,6 +48,39 @@ app.get('/',function(req,res){
 	res.end(data);
     });
 });
+app.post('/validateUser',function(req,res){
+    console.log(req.url);
+    if(req.session.secret)
+	res.redirect("/login");
+    else if(!req.session.userId)
+    {
+	res.setHeader('Content-Type','text/plain');
+	res.end("Forbidden");
+    }
+    else
+    {
+	fs.readFile(req.files.userRegImage.path,function(err,data){
+            imageName=req.files.userRegImage.name;
+            if(!imageName)
+            {
+		console.log("Error!");
+		res.redirect("/");
+		res.end();
+            }
+            else
+            {
+		var newPath=__dirname+"/"+imageName;
+		fs.writeFile(newPath,data,function(err){
+                    if(err)
+                    {
+			console.log("Error in Uploading "+err);
+			return;
+                    }
+		});
+	    }
+	});
+    }
+});
 app.post('/authenticate',function(req,res){
     console.log(req.url);
     if(req.session.userId && req.session.secret)
@@ -67,20 +100,6 @@ app.post('/authenticate',function(req,res){
 		res.setHeader('Content-Type','text/html');
 		res.end(data);
             });
-	    /*var data="<html><head><title>Authentication_"+id+"</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
-	    var getProducts=connection.query("SELECT * FROM `products`",function(err,results){
-		if(err)
-		{
-		    console.log("Error in fetching Products "+err);
-		    return;
-		}
-		for(var i=0;i<results.length;i++)
-		    data+="<ul id="+results[i].id+">"+results[i].name+"&nbsp&nbsp&nbsp&nbsp"+results[i].price+"</ul>";
-		data+="</ul>";
-		data+="<a href='/signout'>Signout</a></body></html";
-		res.setHeader('Content-Type','text/html');
-		res.end(data);
-	    });*/
 	}
 	else
 	    res.redirect("/login");
