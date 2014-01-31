@@ -1,10 +1,14 @@
 var price=0;
+function displayCanvas()
+{
+    document.getElementById("imageDiv").style.display="block";
+}
 function addToCart(id)
 {
     var priceField=document.getElementById("price"+id).innerHTML;
-    price+=priceField;
+    price+=parseInt(priceField);
     document.getElementById("totalCost").innerHTML=price;
-    document.getElementById("payButton").style="display:block";
+    document.getElementById("payButton").style.display="block";
 }
 function snap(w,h)
 {
@@ -48,7 +52,6 @@ function onerror(err)
 }
 function downloadCanvas(link,canvasId,filename)
 {
-    filename=userName;
     link.href=document.getElementById(canvasId).toDataURL();
     link.download=filename;
 }

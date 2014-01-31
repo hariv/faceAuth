@@ -52,15 +52,15 @@ app.post('/validateUser',function(req,res){
     console.log(req.url);
     if(req.session.secret)
 	res.redirect("/login");
-    else if(!req.session.userId)
+    /*else if(!req.session.userId)
     {
 	res.setHeader('Content-Type','text/plain');
 	res.end("Forbidden");
-    }
+    }*/
     else
     {
-	fs.readFile(req.files.userRegImage.path,function(err,data){
-            imageName=req.files.userRegImage.name;
+	fs.readFile(req.files.userValidateImage.path,function(err,data){
+            imageName=req.files.userValidateImage.name;
             if(!imageName)
             {
 		console.log("Error!");
@@ -76,10 +76,22 @@ app.post('/validateUser',function(req,res){
 			console.log("Error in Uploading "+err);
 			return;
                     }
+		    exec("./a.out detect Shiv /home/shravan/nodejs/faceAuth/test.png");
 		});
 	    }
 	});
     }
+});
+app.get('/authenticate',function(req,res){
+    fs.readFile(__dirname+'/home.html',function(err,data){
+	if(err)
+        {
+            console.log("Error Loading Register "+err);
+            return;
+        }
+        res.setHeader('Content-Type','text/html');
+	res.end(data);
+    });
 });
 app.post('/authenticate',function(req,res){
     console.log(req.url);
@@ -198,6 +210,18 @@ app.get('/snapShot.js',function(req,res){
 	res.end(data);
     });
 });
+app.get('/addToCart.js',function(req,res){
+    console.log(req.url);
+    fs.readFile(__dirname+'/addToCart.js',function(err,data){
+        if(err)
+        {
+            console.log("Error Loading addToCart JS "+err);
+            return;
+        }
+        res.setHeader('Content-Type','application/javascript');
+        res.end(data);
+    });
+});
 app.get('/batman.jpeg',function(req,res){
     console.log(req.url);
     fs.readFile(__dirname+'/batman.jpeg',function(err,data){
@@ -276,7 +300,6 @@ app.post('/registerUser',function(req,res){
 		    console.log("Error in Uploading "+err);
 		    return;
 		}
-		console.log(phone);
 		var insertQuery=connection.query("INSERT INTO `users` (`name`,`phone`,`image`) VALUES (?,?,?)",[name,phone,imageName],function(err,result){
 		    if(err)
 		    {
@@ -285,6 +308,7 @@ app.post('/registerUser',function(req,res){
 			return;
 		    }
 		    console.log("Inserted");
+		    exec("./a.out add "+name+" /home/shravan/nodejs/faceAuth/"+name+".png");
 		    res.redirect("/login");
 		});
 	    });
