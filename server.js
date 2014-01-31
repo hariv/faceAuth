@@ -12,7 +12,7 @@ app.use(express.session({secret: '1234567890QWERTY'}));
 var connection=mysql.createConnection({
     host:'localhost',
     user: 'root',
-    password: 'IamBatman',
+    password: 'root',
 });
 connection.connect(function(err){
     if(err)
