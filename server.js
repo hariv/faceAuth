@@ -36,6 +36,7 @@ app.configure(function(){
     app.use(require('connect').bodyParser());
 });
 app.get('/',function(req,res){
+    req.session=null;
     console.log(req.url);
     fs.readFile(__dirname+'/index.html',function(err,data){
 	if(err)
@@ -49,15 +50,15 @@ app.get('/',function(req,res){
 });
 app.post('/authenticate',function(req,res){
     console.log(req.url);
-    if(req.session.id && req.session.secret)
+    if(req.session.userId && req.session.secret)
     {
 	var password=req.body.password;
 	var secret=req.session.secret;
-	var id=req.session.id;
+	var id=req.session.userId;
 	req.session.secret=null;
 	if(password==secret)
 	{
-	    var data="<html><head><title>Authentication</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
+	    var data="<html><head><title>Authentication_"+id+"</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
 	    var getProducts=connection.query("SELECT * FROM `products`",function(err,results){
 		if(err)
 		{
@@ -66,7 +67,8 @@ app.post('/authenticate',function(req,res){
 		}
 		for(var i=0;i<results.length;i++)
 		    data+="<ul id="+results[i].id+">"+results[i].name+"&nbsp&nbsp&nbsp&nbsp"+results[i].price+"</ul>";
-		data+="</ul></body></html>";
+		data+="</ul>";
+		data+="<a href='/signout'>Signout</a></body></html";
 		res.setHeader('Content-Type','text/html');
 		res.end(data);
 	    });
@@ -75,9 +77,25 @@ app.post('/authenticate',function(req,res){
 	    res.redirect("/login");
     }
 });
+app.get('/signout',function(req,res){
+    if(req.session.userId || req.session.secret)
+    {
+	req.session.secret=null;
+	req.session.userId=null;
+	res.redirect("/");
+    }
+    else
+    {
+	res.setHeader('Content-Type','text/plain');
+	res.end('Forbidden');
+    }
+	
+});
 app.get('/register',function(req,res){
     console.log(req.url);
-    if(!req.session.id && !req.session.secret)
+    if(req.session.userId || req.session.secret)
+	res.end("You have already Registered!");
+    else
     {
 	fs.readFile(__dirname+'/register.html',function(err,data){
 	    if(err)
@@ -89,11 +107,9 @@ app.get('/register',function(req,res){
 	    res.end(data);
 	});
     }
-    else
-	res.end("You have already Registered!");
 });
 app.get('/password',function(req,res){
-    if(req.session.id && req.session.secret)
+    if(req.session.userId && req.session.secret)
     {
 	fs.readFile(__dirname+'/password.html',function(err,data){
 	    if(err)
@@ -113,15 +129,22 @@ app.get('/password',function(req,res){
 });
 app.get('/login',function(req,res){
     console.log(req.url);
-    fs.readFile(__dirname+'/login.html',function(err,data){
-	if(err)
-        {
-            console.log("Error Loading Login "+err);
-            return;
-        }
-	res.setHeader('Content-Type','text/html');
-	res.end(data);
-    });
+    if(req.session.userId && !req.session.secret)
+	res.end("You have logged in already");
+    else if(req.session.userId && req.session.secret)
+	res.redirect("/password");
+    else
+    {
+	fs.readFile(__dirname+'/login.html',function(err,data){
+	    if(err)
+            {
+		console.log("Error Loading Login "+err);
+		return;
+            }
+	    res.setHeader('Content-Type','text/html');
+	    res.end(data);
+	});
+    }
 });
 app.get('/getPassword.js',function(req,res){
     console.log(req.url);
@@ -161,6 +184,11 @@ app.get('/batman.jpeg',function(req,res){
 });
 app.post('/getPassword',function(req,res){
     console.log(req.body);
+    if(req.session.userId || req.session.secret)
+    {
+	req.session=null;
+	res.redirect("/");
+    }
     var name=req.body.userLoginName;
     var fetchUserQuery=connection.query("SELECT * FROM `users` WHERE `name`=?",[name],function(err,results){
 	if(err)
@@ -181,7 +209,7 @@ app.post('/getPassword',function(req,res){
 		    "X-Mashape-Authorization": "hjKGftDlUAZkFZ2ZjWjtMAIjpJu6CVzL"
 		})
 		.end(function (response) {
-		    req.session.id=id;
+		    req.session.userId=id;
 		    req.session.secret=hash;
 		    res.redirect('/password');
 		});
@@ -194,6 +222,11 @@ app.post('/getPassword',function(req,res){
     });
 });
 app.post('/registerUser',function(req,res){
+    if(req.session.userId || req.session.secret)
+    {
+	req.session=null;
+	res.redirect("/");
+    }
     var name=req.body.userRegName;
     var phone=req.body.userRegPhone;
     console.log(phone);
@@ -231,5 +264,4 @@ app.post('/registerUser',function(req,res){
     });
 });
 app.listen(3000);
-
 console.log("Server running at 3000");
