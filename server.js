@@ -29,7 +29,7 @@ var query=connection.query('USE faceAuth',function(err,result){
 //var io=require('socket.io').listen(server);
 var splitter=require('./splitter.js');
 app.configure(function(){
-    app.use(express.bodyParser());
+    app.use(require('connect').bodyParser());
 });
 app.get('/',function(req,res){
     console.log(req.url);
@@ -67,6 +67,18 @@ app.get('/login',function(req,res){
 	res.end(data);
     });
 });
+app.get('/getPassword.js',function(req,res){
+    console.log(req.url);
+    fs.readFile(__dirname+'/getPassword.js',function(err,data){
+	if(err)
+	{
+	    console.log("Error Loading getPassword JS"+err);
+	    return;
+	}
+	res.setHeader('Content-Type','application/javascript');
+	res.end(data);
+});
+});
 app.get('/snapShot.js',function(req,res){
     console.log(req.url);
     fs.readFile(__dirname+'/snapShot.js',function(err,data){
@@ -90,6 +102,11 @@ app.get('/batman.jpeg',function(req,res){
 	res.setHeader('Content-Type','image/jpeg');
 	res.end(data);
     });
+});
+app.post('/getPassword',function(req,res){
+    console.log(req.body);
+    res.setHeader('Content-Type','text/plain');
+    res.end("Mass");
 });
 app.post('/registerUser',function(req,res){
     var name=req.body.userRegName;
@@ -129,4 +146,5 @@ app.post('/registerUser',function(req,res){
     });
 });
 app.listen(3000);
+
 console.log("Server running at 3000");

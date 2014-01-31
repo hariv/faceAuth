@@ -1,13 +1,16 @@
 <html>
   <head><title>Authentication</title>
+    <script type="text/javascript" src="getPassword.js"></script>
   </head>
   <body>
     <a href="/">Home</a>
     <h1>The Authenticator</h1>
     <h3>Login Form</h3>
-    <form action="/loginUser" method="POST" id="loginForm">
-      Name : <input type="text" name="userLoginName" /><br />
-      <input type="submit" name="userRegSubmit" id="userRegSubmit" value="Get Password!"/>
+    <div id="statusMessage"></div>
+    <form action="/getPassword" method="POST" id="loginForm">
+    Name : <input type="text" name="userLoginName" id="userLoginName"/><br />
+    <input type="submit" name="userRegSubmit" value="Get Password!" />
+    <!--<input type="button" name="userRegSubmit" id="userRegSubmit" value="Get Password!" onclick="getPassword()" />-->
     </form><br /><br />
   </body>
 </html>
