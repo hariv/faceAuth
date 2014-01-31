@@ -58,7 +58,16 @@ app.post('/authenticate',function(req,res){
 	req.session.secret=null;
 	if(password==secret)
 	{
-	    var data="<html><head><title>Authentication_"+id+"</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
+	    fs.readFile(__dirname+'/home.html',function(err,data){
+		if(err)
+		{
+                    console.log("Error Loading Register "+err);
+                    return;
+		}
+		res.setHeader('Content-Type','text/html');
+		res.end(data);
+            });
+	    /*var data="<html><head><title>Authentication_"+id+"</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
 	    var getProducts=connection.query("SELECT * FROM `products`",function(err,results){
 		if(err)
 		{
@@ -71,7 +80,7 @@ app.post('/authenticate',function(req,res){
 		data+="<a href='/signout'>Signout</a></body></html";
 		res.setHeader('Content-Type','text/html');
 		res.end(data);
-	    });
+	    });*/
 	}
 	else
 	    res.redirect("/login");

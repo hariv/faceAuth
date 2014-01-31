@@ -1,3 +1,11 @@
+var price=0;
+function addToCart(id)
+{
+    var priceField=document.getElementById("price"+id).innerHTML;
+    price+=priceField;
+    document.getElementById("totalCost").innerHTML=price;
+    document.getElementById("payButton").style="display:block";
+}
 function snap(w,h)
 {
     console.log("Called Snap");
@@ -40,7 +48,8 @@ function onerror(err)
 }
 function downloadCanvas(link,canvasId,filename) 
 { 
-    console.log(link);
+    var userName=document.getElementById("userRegName").value+'.png';
+    filename=userName;
     link.href=document.getElementById(canvasId).toDataURL();
     link.download=filename;
 }
@@ -57,14 +66,12 @@ window.onload=function()
 	    video: true,
 	    audio: false
 	},onsuccess,onerror);
-	/*var image=document.getElementById("image");
-	var ctx=canvas.getContext("2d");
-	ctx.drawImage(image,0,0,256,256);
+	
 	var downButton=document.createElement("a");
 	downButton.id="downButton";
 	downButton.innerHTML="Download!";
 	document.getElementById("imageDiv").appendChild(downButton);
-	downButton.addEventListener('click',function(){downloadCanvas(this,'snapShot','test.jpeg');},false)*/
+	downButton.addEventListener('click',function(){downloadCanvas(this,'snapShot','test.png');},false);
     }
     else
 	alert("Video Not Supported on Browser!");

@@ -1,0 +1,32 @@
+<html>
+  <head><title>Authentication</title>
+    <script type="text/javascript" src="snapShot.js"></script>
+  </head>
+  <body>
+    <a href="/">Home</a>
+    <h1>The Authenticator</h1>
+    <a href="/signout">Sign Out</a>
+    <h3>Product Listing</h3>
+    <table id="productTable">
+      <tr><th>PId</th><th>Name</th><th>Price</th><th></th></tr>
+      <tr><td>1</td><td>Item 1</td><td id="price1">100</td><td><button id="1" onclick="addToCart(this.id)">Buy!</button></td></tr>
+      <tr><td>2</td><td>Item 2</td><td id="price2">100</td><td><button id="2" onclick="addToCart(this.id)">Buy!</button></td></tr>
+      <tr><td>3</td><td>Item 3</td><td id="price3">100</td><td><button id="3" onclick="addToCart(this.id)">Buy!</button></td></tr>
+      <tr><td>4</td><td>Item 4</td><td id="price4">100</td><td><button id="4" onclick="addToCart(this.id)">Buy!</button></td></tr>
+      <tr><td>5</td><td>Item 5</td><td id="price5">100</td><td><button id="5" onclick="addToCart(this.id)">Buy!</button></td></tr>
+    </table>
+    <h2>Total Cost</h2>
+    <div id="totalCost">
+    </div>
+    <div id="imageDiv" style="display:none">
+      <video id="webcam"></video>
+      <canvas id="snapShot"></canvas>
+      <button id="snapButton" onclick="takeSnaps()">Take Snapshot</button>
+      <form action="/validateUser" method="POST" id="validateForm" enctype="multipart/form-data">
+	Image: <input type="file" name="userValidateImage" /><br />
+	<input type="submit" name="userValidateSubmit" id="userValidateSubmit" value="Validate" />
+      </form>
+    </div>
+    <button id="payButton" style="display:none" onclick="function(){document.getElementById('imageDiv').style='display:block;'}">Pay</button>
+  </body>
+</html>
