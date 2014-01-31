@@ -7,6 +7,8 @@ var server=http.createServer(app);
 var crypto=require('crypto');
 var mysql=require('mysql');
 var unirest=require('unirest');
+app.use(express.cookieParser());
+app.use(express.session({secret: '1234567890QWERTY'}));
 var connection=mysql.createConnection({
     host:'localhost',
     user: 'root',
@@ -45,17 +47,69 @@ app.get('/',function(req,res){
 	res.end(data);
     });
 });
+app.post('/authenticate',function(req,res){
+    console.log(req.url);
+    if(req.session.id && req.session.secret)
+    {
+	var password=req.body.password;
+	var secret=req.session.secret;
+	var id=req.session.id;
+	req.session.secret=null;
+	if(password==secret)
+	{
+	    var data="<html><head><title>Authentication</title></head><body><h1>Products Listing</h1><ul id=\"products\">";
+	    var getProducts=connection.query("SELECT * FROM `products`",function(err,results){
+		if(err)
+		{
+		    console.log("Error in fetching Products "+err);
+		    return;
+		}
+		for(var i=0;i<results.length;i++)
+		    data+="<ul id="+results[i].id+">"+results[i].name+"&nbsp&nbsp&nbsp&nbsp"+results[i].price+"</ul>";
+		data+="</ul></body></html>";
+		res.setHeader('Content-Type','text/html');
+		res.end(data);
+	    });
+	}
+	else
+	    res.redirect("/login");
+    }
+});
 app.get('/register',function(req,res){
     console.log(req.url);
-    fs.readFile(__dirname+'/register.html',function(err,data){
-	if(err)
-	{
-	    console.log("Error Loading Register "+err);
-	    return;
-	}
-	res.setHeader('Content-Type','text/html');
-	res.end(data);
-    });
+    if(!req.session.id && !req.session.secret)
+    {
+	fs.readFile(__dirname+'/register.html',function(err,data){
+	    if(err)
+	    {
+		console.log("Error Loading Register "+err);
+		return;
+	    }
+	    res.setHeader('Content-Type','text/html');
+	    res.end(data);
+	});
+    }
+    else
+	res.end("You have already Registered!");
+});
+app.get('/password',function(req,res){
+    if(req.session.id && req.session.secret)
+    {
+	fs.readFile(__dirname+'/password.html',function(err,data){
+	    if(err)
+	    {
+		console.log("Error Loading Password "+err);
+		return;
+	    }
+	    res.setHeader('Content-Type','text/html');
+	    res.end(data);
+	});
+    }
+    else
+    {
+	res.setHeader('Content-Type','text/plain');
+	res.end("Forbidden!");
+    }
 });
 app.get('/login',function(req,res){
     console.log(req.url);
@@ -117,23 +171,27 @@ app.post('/getPassword',function(req,res){
 	if(results.length>0)
 	{
 	    var phone=results[0].phone;
+	    var id=results[0].id;
 	    var date=new Date();
 	    var now=date.getSeconds().toString();
 	    var hash=crypto.createHash('md5').update(name+phone+now).digest("hex");
+	    console.log(hash);
 	    var Request = unirest.get("https://site2sms.p.mashape.com/index.php?uid=8438121945&pwd=330666&phone="+phone+"&msg="+hash)
 		.headers({ 
 		    "X-Mashape-Authorization": "hjKGftDlUAZkFZ2ZjWjtMAIjpJu6CVzL"
 		})
 		.end(function (response) {
-		    console.log(response);
+		    req.session.id=id;
+		    req.session.secret=hash;
+		    res.redirect('/password');
 		});
-	    console.log(hash);
+	}
+	else
+	{
+	    res.setHeader('Content-Type','text/plain');
+	    res.end("Register on the Site First!");
 	}
     });
-    //req.session.userName=req.body.userLoginName;
-    
-    res.setHeader('Content-Type','text/plain');
-    res.end("Mass");
 });
 app.post('/registerUser',function(req,res){
     var name=req.body.userRegName;
