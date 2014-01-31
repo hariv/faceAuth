@@ -13,7 +13,7 @@ function onsuccess(stream)
 function onerror(err)
 {
     console.log(err);
-    alert('There has been a problem retrieving the streams - did you allow access?');
+//    alert('There has been a problem retrieving the streams - did you allow access?');
 }
 function downloadCanvas(link,canvasId,filename) 
 { 

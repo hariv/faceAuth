@@ -4,6 +4,28 @@ var http=require('http');
 var express=require('express');
 var app=express();
 var server=http.createServer(app);
+var mysql=require('mysql');
+var connection=mysql.createConnection({
+    host:'localhost',
+    user: 'root',
+    password: 'IamBatman',
+});
+connection.connect(function(err){
+    if(err)
+    {
+	console.log("Error in connecting to MySQL "+err);
+	return;
+    }
+    console.log("Connected to MySQL");
+});
+var query=connection.query('USE faceAuth',function(err,result){
+    if(err)
+    {
+	console.log("Error in selecting DB "+err);
+	return;
+    }
+    console.log("Database Connection Established");
+});
 //var io=require('socket.io').listen(server);
 var splitter=require('./splitter.js');
 app.configure(function(){
@@ -70,60 +92,41 @@ app.get('/batman.jpeg',function(req,res){
     });
 });
 app.post('/registerUser',function(req,res){
-    fs.readFile(req.files.image.path,function(err,data){
-	var imageName=req.files.image.name;
-	if(!imageName)
-	{
-	    console.log("Error!");
-	    res.redirect("/");
-	    res.end();
-	}
+    var name=req.body.userRegName;
+    var phone=req.body.userRegPhone;
+    console.log(phone);
+    var imageName="";
+    fs.readFile(req.files.userRegImage.path,function(err,data){ 
+	imageName=req.files.userRegImage.name;
+	if(!imageName) 
+	{ 
+	    console.log("Error!"); 
+	    res.redirect("/"); 
+	    res.end(); 
+	} 
 	else
 	{
 	    var newPath=__dirname+"/"+imageName;
-	    fs.writeFile(newPath,data,function(err){
+	    fs.writeFile(newPath,data,function(err){ 
 		if(err)
 		{
-		    console.log(err);
+		    console.log("Error in Uploading "+err);
 		    return;
 		}
-		res.redirect("/"+imageName);
+		console.log(phone);
+		var insertQuery=connection.query("INSERT INTO `users` (`name`,`phone`,`image`) VALUES (?,?,?)",[name,phone,imageName],function(err,result){
+		    if(err)
+		    {
+			console.log(insertQuery.sql);
+			console.log("Error in inserting to users table "+err);
+			return;
+		    }
+		    console.log("Inserted");
+		    res.redirect("/login");
+		});
 	    });
 	}
     });
 });
-/*app.post('/registerUser',function(req,res){
-       var body="";
-    req.on("data",function(chunk){
-	body+=chunk;
-    });
-    req.on("end",function(){
-	if(body!="")
-	{
-	    var hash=splitter.formValues(body);
-	    console.log(hash["userRegName"]);
-	    console.log(hash["userRegPhone"]);
-	}
-    });
-    res.setHeader('Content-Type','text/plain');
-    res.end("Mass");
-});*/
-/*app.post('/login',function(req,res){
-    console.log(req.url);
-    res.setHeader('Content-Type','text/plain');
-    res.end("Over Mass");
-});
-app.get('/main.js',function(req,res){
-    console.log(req.url);
-    fs.readFile(__dirname+'/main.js',function(err,data){
-	if(err)
-	{
-	    console.log("Error Loading Main Js "+err);
-	    return;
-	}
-	res.setHeader('Content-Type','application/javascript');
-	res.end(data);
-    });
-});*/
 app.listen(3000);
 console.log("Server running at 3000");
