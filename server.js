@@ -4,7 +4,9 @@ var http=require('http');
 var express=require('express');
 var app=express();
 var server=http.createServer(app);
+var crypto=require('crypto');
 var mysql=require('mysql');
+var unirest=require('unirest');
 var connection=mysql.createConnection({
     host:'localhost',
     user: 'root',
@@ -105,6 +107,31 @@ app.get('/batman.jpeg',function(req,res){
 });
 app.post('/getPassword',function(req,res){
     console.log(req.body);
+    var name=req.body.userLoginName;
+    var fetchUserQuery=connection.query("SELECT * FROM `users` WHERE `name`=?",[name],function(err,results){
+	if(err)
+	{
+	    console.log("Error in Fetching User "+error);
+	    return;
+	}
+	if(results.length>0)
+	{
+	    var phone=results[0].phone;
+	    var date=new Date();
+	    var now=date.getSeconds().toString();
+	    var hash=crypto.createHash('md5').update(name+phone+now).digest("hex");
+	    var Request = unirest.get("https://site2sms.p.mashape.com/index.php?uid=8438121945&pwd=330666&phone="+phone+"&msg="+hash)
+		.headers({ 
+		    "X-Mashape-Authorization": "hjKGftDlUAZkFZ2ZjWjtMAIjpJu6CVzL"
+		})
+		.end(function (response) {
+		    console.log(response);
+		});
+	    console.log(hash);
+	}
+    });
+    //req.session.userName=req.body.userLoginName;
+    
     res.setHeader('Content-Type','text/plain');
     res.end("Mass");
 });
